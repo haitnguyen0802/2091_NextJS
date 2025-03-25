@@ -5,10 +5,9 @@ interface ToolBoxProps {
     totalProducts: number;
     currentPage: number;
     productsPerPage: number;
-    isCategorySelected: boolean;
 }
 
-export default function ToolBox({ onSortChange, totalProducts, currentPage, productsPerPage, isCategorySelected }: ToolBoxProps) {
+export default function ToolBox({ onSortChange, totalProducts, currentPage, productsPerPage }: ToolBoxProps) {
     const startProduct = (currentPage - 1) * productsPerPage + 1;
     const endProduct = Math.min(startProduct + productsPerPage - 1, totalProducts);
 
@@ -29,9 +28,9 @@ export default function ToolBox({ onSortChange, totalProducts, currentPage, prod
                 <div className="toolbox-sort">
                     <label htmlFor="sortby">Sort by:</label>
                     <div className="select-custom">
-                        <select
-                            name="sortby"
-                            id="sortby"
+                        <select 
+                            name="sortby" 
+                            id="sortby" 
                             className="form-control"
                             onChange={handleSortChange}
                             defaultValue="popular"

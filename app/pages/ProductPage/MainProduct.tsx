@@ -38,7 +38,7 @@ export default function MainProduct({ selectedCategoryId }: MainProductProps) {
                 ? `https://fpl.timefortea.io.vn/api/categories/${selectedCategoryId}`
                 : 'https://fpl.timefortea.io.vn/api/products';
             
-            // Luôn thêm tham số sort vào URL
+            // Thêm tham số sort vào URL cho cả hai trường hợp
             url += `?sort=${sortType}`;
             
             console.log('Fetching URL:', url); // Debug log
@@ -48,7 +48,7 @@ export default function MainProduct({ selectedCategoryId }: MainProductProps) {
             }
             const data = await response.json();
             console.log('Fetched data:', data); // Debug log
-            setProducts(data);
+            setProducts(data); // Sử dụng dữ liệu đã sắp xếp từ server
             setCurrentPage(1); // Reset to first page when category or sort changes
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred');
@@ -83,7 +83,6 @@ export default function MainProduct({ selectedCategoryId }: MainProductProps) {
                     totalProducts={products.length}
                     currentPage={currentPage}
                     productsPerPage={PRODUCTS_PER_PAGE}
-                    isCategorySelected={!!selectedCategoryId}
                 />
                 <div className="products mb-3">
                     <div className="row justify-content-center">
@@ -106,7 +105,6 @@ export default function MainProduct({ selectedCategoryId }: MainProductProps) {
                     totalProducts={products.length}
                     currentPage={currentPage}
                     productsPerPage={PRODUCTS_PER_PAGE}
-                    isCategorySelected={!!selectedCategoryId}
                 />
                 <div className="products mb-3">
                     <div className="row justify-content-center">
@@ -128,7 +126,6 @@ export default function MainProduct({ selectedCategoryId }: MainProductProps) {
                 totalProducts={products.length}
                 currentPage={currentPage}
                 productsPerPage={PRODUCTS_PER_PAGE}
-                isCategorySelected={!!selectedCategoryId}
             />
             <div className="products mb-3">
                 <div className="row justify-content-center">
