@@ -15,9 +15,11 @@ export default function Header() {
                     </div>
                     <div className="header-right">
                         {/* Not LogIn */}
-                        {/* <ul class="top-menu top-link-menu">
-                      <li><a href="#signin-modal" data-toggle="modal" class="top-menu-login"><i class="icon-user"></i>Login | Resgister </a></li>
-                  </ul> */}
+                        {/* 
+                            <ul class="top-menu top-link-menu">
+                                <li><a href="#signin-modal" data-toggle="modal" class="top-menu-login"><i class="icon-user"></i>Login | Resgister </a></li>
+                            </ul> 
+                        */}
                         {/* Logged In */}
                         <ul className="top-menu">
                             <li>
