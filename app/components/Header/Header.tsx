@@ -91,13 +91,13 @@ export default function Header() {
                                     <div className="product">
                                         <div className="product-cart-details">
                                             <h4 className="product-title">
-                                                <Link href={PATHS.PRODUCTS_DETAIL}>Beige knitted</Link>
+                                                <Link href={PATHS.PRODUCT_DETAIL}>Beige knitted</Link>
                                             </h4>
                                             <span className="cart-product-info">
                                                 <span className="cart-product-qty">1</span> x $84.00 </span>
                                         </div>
                                         <figure className="product-image-container">
-                                            <Link href={PATHS.PRODUCTS_DETAIL} className="product-image">
+                                            <Link href={PATHS.PRODUCT_DETAIL} className="product-image">
                                                 <img src="assets/images/products/cart/product-1.jpg" alt="product" />
                                             </Link>
                                         </figure>
@@ -108,13 +108,13 @@ export default function Header() {
                                     <div className="product">
                                         <div className="product-cart-details">
                                             <h4 className="product-title">
-                                                <Link href={PATHS.PRODUCTS_DETAIL}>Blue utility</Link>
+                                                <Link href={PATHS.PRODUCT_DETAIL}>Blue utility</Link>
                                             </h4>
                                             <span className="cart-product-info">
                                                 <span className="cart-product-qty">1</span> x $76.00 </span>
                                         </div>
                                         <figure className="product-image-container">
-                                            <Link href={PATHS.PRODUCTS_DETAIL} className="product-image">
+                                            <Link href={PATHS.PRODUCT_DETAIL} className="product-image">
                                                 <img src="assets/images/products/cart/product-2.jpg" alt="product" />
                                             </Link>
                                         </figure>

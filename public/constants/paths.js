@@ -9,8 +9,7 @@ const PROFILE_CHANGE_PASS = PROFILE_PATH + "/change-password";
 export const PATHS = {
   HOME: "/",
   PRODUCTS: PRODUCTS_PATH,
-  PRODUCTS_DETAIL: PRODUCTS_DETAIL,
-  // PRODUCT_DETAIL: PRODUCTS_PATH + "/:slug",
+  PRODUCT_DETAIL: PRODUCTS_DETAIL,
   CART: "/cart",
   CHECKOUT: "/checkout",
   CHECKOUT_SUCCESS: "/checkout_success",

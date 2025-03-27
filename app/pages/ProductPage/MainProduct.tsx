@@ -1,6 +1,5 @@
 'use client';
 
-import { PATHS } from '@/public/constants/paths';
 import Link from 'next/link';
 import ToolBox from './ToolBox';
 import Pagination from '@/app/components/Pagination';
@@ -16,6 +15,7 @@ interface Product {
     id_loai: number;
     created_at: string | null;
     updated_at: string | null;
+    slug?: string;
 }
 
 interface MainProductProps {
@@ -34,13 +34,13 @@ export default function MainProduct({ selectedCategoryId }: MainProductProps) {
     const fetchProducts = async () => {
         try {
             setLoading(true);
-            let url = selectedCategoryId 
+            let url = selectedCategoryId
                 ? `https://fpl.timefortea.io.vn/api/categories/${selectedCategoryId}`
                 : 'https://fpl.timefortea.io.vn/api/products';
-            
+
             // Thêm tham số sort vào URL cho cả hai trường hợp
             url += `?sort=${sortType}`;
-            
+
             console.log('Fetching URL:', url); // Debug log
             const response = await fetch(url);
             if (!response.ok) {
@@ -78,7 +78,7 @@ export default function MainProduct({ selectedCategoryId }: MainProductProps) {
     if (loading) {
         return (
             <div className="col-lg-9">
-                <ToolBox 
+                <ToolBox
                     onSortChange={handleSortChange}
                     totalProducts={products.length}
                     currentPage={currentPage}
@@ -100,7 +100,7 @@ export default function MainProduct({ selectedCategoryId }: MainProductProps) {
     if (error) {
         return (
             <div className="col-lg-9">
-                <ToolBox 
+                <ToolBox
                     onSortChange={handleSortChange}
                     totalProducts={products.length}
                     currentPage={currentPage}
@@ -121,7 +121,7 @@ export default function MainProduct({ selectedCategoryId }: MainProductProps) {
 
     return (
         <div className="col-lg-9">
-            <ToolBox 
+            <ToolBox
                 onSortChange={handleSortChange}
                 totalProducts={products.length}
                 currentPage={currentPage}
@@ -133,11 +133,16 @@ export default function MainProduct({ selectedCategoryId }: MainProductProps) {
                         <div key={product.id} className="col-6 col-md-4 col-lg-4">
                             <div className="product product-2">
                                 <figure className="product-media">
-                                    <Link href={PATHS.PRODUCTS_DETAIL}>
-                                        <img 
-                                            src={product.hinh} 
-                                            alt={product.ten_sp} 
-                                            className="product-image" 
+                                    <Link 
+                                        href={{
+                                            pathname: '/product-detail',
+                                            query: { id: product.id }
+                                        }}
+                                    >
+                                        <img
+                                            src={product.hinh}
+                                            alt={product.ten_sp}
+                                            className="product-image"
                                         />
                                     </Link>
                                     <div className="product-action-vertical">
@@ -153,7 +158,14 @@ export default function MainProduct({ selectedCategoryId }: MainProductProps) {
                                 </figure>
                                 <div className="product-body">
                                     <h3 className="product-title">
-                                        <Link href={PATHS.PRODUCTS_DETAIL}>{product.ten_sp}</Link>
+                                        <Link 
+                                            href={{
+                                                pathname: '/product-detail',
+                                                query: { id: product.id }
+                                            }}
+                                        >
+                                            {product.ten_sp}
+                                        </Link>
                                     </h3>
                                     <div className="product-price">
                                         {product.gia_km ? (
@@ -178,7 +190,7 @@ export default function MainProduct({ selectedCategoryId }: MainProductProps) {
                 </div>
             </div>
             {totalPages > 1 && (
-                <Pagination 
+                <Pagination
                     currentPage={currentPage}
                     totalPages={totalPages}
                     onPageChange={handlePageChange}
