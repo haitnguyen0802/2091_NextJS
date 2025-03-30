@@ -13,7 +13,7 @@ export default function LoginModal({ isOpen, onClose, onSwitchToRegister }: Logi
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
-    const { login, isLoading, error } = useAuth();
+    const { login, loading, error } = useAuth();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -65,7 +65,7 @@ export default function LoginModal({ isOpen, onClose, onSwitchToRegister }: Logi
                                                     required
                                                     value={email}
                                                     onChange={(e) => setEmail(e.target.value)}
-                                                    disabled={isLoading}
+                                                    disabled={loading}
                                                 />
                                             </div>
 
@@ -79,7 +79,7 @@ export default function LoginModal({ isOpen, onClose, onSwitchToRegister }: Logi
                                                     required
                                                     value={password}
                                                     onChange={(e) => setPassword(e.target.value)}
-                                                    disabled={isLoading}
+                                                    disabled={loading}
                                                 />
                                             </div>
 
@@ -87,9 +87,9 @@ export default function LoginModal({ isOpen, onClose, onSwitchToRegister }: Logi
                                                 <button 
                                                     type="submit" 
                                                     className="btn btn-outline-primary-2"
-                                                    disabled={isLoading}
+                                                    disabled={loading}
                                                 >
-                                                    {isLoading ? (
+                                                    {loading ? (
                                                         <>
                                                             <span className="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>
                                                             Logging in...
@@ -109,7 +109,7 @@ export default function LoginModal({ isOpen, onClose, onSwitchToRegister }: Logi
                                                         id="signin-remember"
                                                         checked={rememberMe}
                                                         onChange={(e) => setRememberMe(e.target.checked)}
-                                                        disabled={isLoading}
+                                                        disabled={loading}
                                                     />
                                                     <label className="custom-control-label" htmlFor="signin-remember">Remember Me</label>
                                                 </div>

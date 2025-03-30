@@ -1,6 +1,28 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import axios from 'axios';
+
+// Define interfaces for administrative data
+interface Ward {
+    Id: string;
+    Name: string;
+    Level: string;
+}
+
+interface District {
+    Id: string;
+    Name: string;
+    Level: string;
+    Wards: Ward[];
+}
+
+interface City {
+    Id: string;
+    Name: string;
+    Level: string;
+    Districts: District[];
+}
 
 // Định nghĩa interface cho dữ liệu form
 export interface BillingFormData {
@@ -47,8 +69,113 @@ export default function BillingDetail({ formRef: externalFormRef, onFormChange }
     });
 
     const [errors, setErrors] = useState<{ [key: string]: boolean }>({});
+    const [cities, setCities] = useState<City[]>([]);
+    const [districts, setDistricts] = useState<District[]>([]);
+    const [wards, setWards] = useState<Ward[]>([]);
+    const [loading, setLoading] = useState(false);
+
     const internalFormRef = useRef<HTMLDivElement>(null);
     const formRef = externalFormRef || internalFormRef;
+
+    // Fetch administrative divisions data
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const response = await axios.get<City[]>(
+                    'https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/data.json'
+                );
+                setCities(response.data);
+            } catch (error) {
+                console.error('Error fetching administrative data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    // Handle city change
+    const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const cityId = e.target.value;
+        
+        // Update form with selected city
+        setForm(prev => ({
+            ...prev,
+            city: cityId,
+            district: '',
+            ward: ''
+        }));
+        
+        // Clear errors
+        setErrors(prev => ({
+            ...prev,
+            city: false
+        }));
+        
+        // Reset districts and wards
+        setWards([]);
+        
+        // Find districts for the selected city
+        if (cityId && cities.length > 0) {
+            const cityData = cities.find(city => city.Id === cityId);
+            if (cityData) {
+                setDistricts(cityData.Districts);
+            } else {
+                setDistricts([]);
+            }
+        } else {
+            setDistricts([]);
+        }
+    };
+
+    // Handle district change
+    const handleDistrictChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const districtId = e.target.value;
+        
+        // Update form with selected district
+        setForm(prev => ({
+            ...prev,
+            district: districtId,
+            ward: ''
+        }));
+        
+        // Clear errors
+        setErrors(prev => ({
+            ...prev,
+            district: false
+        }));
+        
+        // Find wards for the selected district
+        if (districtId && districts.length > 0) {
+            const districtData = districts.find(district => district.Id === districtId);
+            if (districtData) {
+                setWards(districtData.Wards);
+            } else {
+                setWards([]);
+            }
+        } else {
+            setWards([]);
+        }
+    };
+
+    // Handle ward change
+    const handleWardChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const wardId = e.target.value;
+        
+        // Update form with selected ward
+        setForm(prev => ({
+            ...prev,
+            ward: wardId
+        }));
+        
+        // Clear errors
+        setErrors(prev => ({
+            ...prev,
+            ward: false
+        }));
+    };
 
     // Chia sẻ dữ liệu form khi có thay đổi
     useEffect(() => {
@@ -123,11 +250,15 @@ export default function BillingDetail({ formRef: externalFormRef, onFormChange }
                             className={`form-control form-select${errors.city ? ' input-error' : ''}`}
                             aria-label="Default select example"
                             value={form.city}
-                            onChange={handleChange}
+                            onChange={handleCityChange}
+                            disabled={loading}
                         >
                             <option value="">Select City</option>
-                            <option value="hn">Hà Nội</option>
-                            <option value="hcm">Hồ Chí Minh</option>
+                            {cities.map(city => (
+                                <option key={city.Id} value={city.Id}>
+                                    {city.Name}
+                                </option>
+                            ))}
                         </select>
                     </div>
                     {errors.city && <p className="form-error">Please fill in this field</p>}
@@ -140,10 +271,15 @@ export default function BillingDetail({ formRef: externalFormRef, onFormChange }
                             id="district"
                             className={`form-control form-select${errors.district ? ' input-error' : ''}`}
                             value={form.district}
-                            onChange={handleChange}
+                            onChange={handleDistrictChange}
+                            disabled={!form.city || loading}
                         >
                             <option value="">Select District</option>
-                            <option value="q1">Quận 1</option>
+                            {districts.map(district => (
+                                <option key={district.Id} value={district.Id}>
+                                    {district.Name}
+                                </option>
+                            ))}
                         </select>
                     </div>
                     {errors.district && <p className="form-error">Please fill in this field</p>}
@@ -156,10 +292,15 @@ export default function BillingDetail({ formRef: externalFormRef, onFormChange }
                             id="ward"
                             className={`form-control form-select${errors.ward ? ' input-error' : ''}`}
                             value={form.ward}
-                            onChange={handleChange}
+                            onChange={handleWardChange}
+                            disabled={!form.district || loading}
                         >
                             <option value="">Select Ward</option>
-                            <option value="p1">Phường 1</option>
+                            {wards.map(ward => (
+                                <option key={ward.Id} value={ward.Id}>
+                                    {ward.Name}
+                                </option>
+                            ))}
                         </select>
                     </div>
                     {errors.ward && <p className="form-error">Please fill in this field</p>}
