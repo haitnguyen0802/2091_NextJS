@@ -11,6 +11,28 @@ const nextConfig: NextConfig = {
   },
   async rewrites() {
     return [
+      // Allow the following routes to work correctly
+      {
+        source: '/checkout',
+        destination: '/checkout',
+      },
+      {
+        source: '/cart',
+        destination: '/cart',
+      },
+      {
+        source: '/checkout_success',
+        destination: '/checkout_success',
+      },
+      {
+        source: '/product-detail/:path*',
+        destination: '/product-detail/:path*',
+      },
+      {
+        source: '/products/:path*',
+        destination: '/products/:path*',
+      },
+      // Catch-all for other routes (SPA behavior)
       {
         source: '/:path*',
         destination: '/',

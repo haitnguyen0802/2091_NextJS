@@ -1,2 +1,118 @@
 @import url("https://fonts.googleapis.com/css?family=Poppins:200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800");
 @import "tailwindcss";
+
+/* Search Results Dropdown */
+.header-search {
+  position: relative;
+}
+
+/* Ẩn ô tìm kiếm mặc định */
+.header-search .header-search-wrapper {
+  display: none;
+  position: absolute;
+  right: -1.4rem;
+  top: 0;
+  margin-top: -.5rem;
+  min-width: 270px;
+  background-color: #fff;
+  box-shadow: 0 5px 8px rgba(0, 0, 0, 0.05);
+  z-index: 1000;
+  border-radius: 0;
+}
+
+/* Hiển thị khi hover vào header-search */
+.header-search:hover .header-search-wrapper {
+  display: flex;
+}
+
+/* Giữ hiển thị khi có class active */
+.header-search.active .header-search-wrapper {
+  display: flex;
+}
+
+.search-results {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: #fff;
+  border-radius: 0 0 3px 3px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  max-height: 400px;
+  min-width: max-content;
+  overflow-y: auto;
+  margin-top: 5px;
+}
+
+.search-results ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.search-results li {
+  padding: 10px 15px;
+  border-bottom: 1px solid #f1f1f1;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.search-results li:last-child {
+  border-bottom: none;
+}
+
+.search-results li:hover {
+  background-color: #f9f9f9;
+}
+
+.search-result-item {
+  display: flex;
+  align-items: center;
+}
+
+.search-result-item img {
+  margin-right: 10px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.product-info {
+  flex: 1;
+}
+
+.product-info h5 {
+  margin: 0 0 5px 0;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.product-info p {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.new-price {
+  color: #c96;
+  font-weight: 600;
+}
+
+.old-price {
+  color: #999;
+  text-decoration: line-through;
+  margin-left: 5px;
+  font-size: 0.8rem;
+}
+
+.search-loader {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.no-results {
+  padding: 15px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}

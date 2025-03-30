@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-
 import "./globals.css";
 import Script from 'next/script';
+import ClientWrapper from "./components/ClientWrapper";
+
 export const metadata: Metadata = {
   title: "Shop App",
   description: "E-commerce application",
@@ -37,7 +38,9 @@ export default function RootLayout({
         <link rel="stylesheet" href="/assets/css/plugins/owl-carousel/owl.carousel.css" />
       </head>
       <body>
-        {children}
+        <ClientWrapper>
+          {children}
+        </ClientWrapper>
         <Script src="/assets/js/jquery.min.js" />
         <Script src="/assets/js/bootstrap.bundle.min.js" />
         <Script src="/assets/js/jquery.hoverIntent.min.js" />
@@ -50,8 +53,6 @@ export default function RootLayout({
         <Script src="/assets/js/jquery.countdown.min.js" />
         <Script src="/assets/js/nouislider.min.js" />
         <Script src="/assets/js/wNumb.js" />
-        {/* <Script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.js" /> */}
-        {/* <Script src="https://cdnjs.cloudflare.com/ajax/libs/wnumb/1.2.0/wNumb.min.js" /> */}
       </body>
     </html>
   )

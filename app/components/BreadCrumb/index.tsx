@@ -1,6 +1,11 @@
 import { PATHS } from '@/public/constants/paths';
 import Link from 'next/link';
-export default function BreadCrumb() {
+
+interface BreadCrumbProps {
+    title?: string;
+}
+
+export default function BreadCrumb({ title = 'Product' }: BreadCrumbProps) {
     return (
         <>
             <nav aria-label="breadcrumb" className="breadcrumb-nav mb-2">
@@ -9,7 +14,7 @@ export default function BreadCrumb() {
                         <li className="breadcrumb-item">
                             <Link href={PATHS.HOME}>Home</Link>
                         </li>
-                        <li className="breadcrumb-item active" aria-current="page">Product</li>
+                        <li className="breadcrumb-item active" aria-current="page">{title}</li>
                     </ol>
                 </div>
             </nav>

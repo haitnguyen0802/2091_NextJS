@@ -3,7 +3,10 @@
 import Link from 'next/link';
 import ToolBox from './ToolBox';
 import Pagination from '@/app/components/Pagination';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { useCart } from '@/app/context/CartContext';
+import { formatCurrency } from '@/app/utils/formatCurrency';
+import { PATHS } from '@/public/constants/paths';
 
 interface Product {
     id: number;
@@ -30,6 +33,9 @@ export default function MainProduct({ selectedCategoryId }: MainProductProps) {
     const [error, setError] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [sortType, setSortType] = useState('popular');
+    const [notifications, setNotifications] = useState<{ id: number, message: string }[]>([]);
+    const [addingToCartIds, setAddingToCartIds] = useState<number[]>([]);
+    const { addToCart } = useCart();
 
     const fetchProducts = async () => {
         try {
@@ -74,6 +80,30 @@ export default function MainProduct({ selectedCategoryId }: MainProductProps) {
         console.log('Sort type changed to:', newSortType); // Debug log
         setSortType(newSortType);
     };
+
+    const handleAddToCart = useCallback((product: Product) => {
+        // Prevent multiple clicks on the same product
+        if (addingToCartIds.includes(product.id)) return;
+        
+        setAddingToCartIds(prev => [...prev, product.id]);
+        
+        // Thêm sản phẩm vào giỏ hàng với logic đơn giản hóa mới
+        addToCart(product);
+        
+        // Add notification
+        const newNotification = {
+            id: Date.now(),
+            message: `${product.ten_sp} has been added to your cart`
+        };
+        
+        setNotifications(prev => [...prev, newNotification]);
+        
+        // Remove notification and unlock button after 3 seconds
+        setTimeout(() => {
+            setNotifications(prev => prev.filter(n => n.id !== newNotification.id));
+            setAddingToCartIds(prev => prev.filter(id => id !== product.id));
+        }, 3000);
+    }, [addToCart, addingToCartIds]);
 
     if (loading) {
         return (
@@ -121,6 +151,22 @@ export default function MainProduct({ selectedCategoryId }: MainProductProps) {
 
     return (
         <div className="col-lg-9">
+            {notifications.map(notification => (
+                <div key={notification.id} className="alert alert-success alert-dismissible fade show">
+                    {notification.message}
+                    <Link href={PATHS.CART} className="btn btn-outline-primary-2 btn-sm ml-2">
+                        View Cart
+                    </Link>
+                    <button 
+                        type="button" 
+                        className="close" 
+                        onClick={() => setNotifications(prev => prev.filter(n => n.id !== notification.id))}
+                    >
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            ))}
+            
             <ToolBox
                 onSortChange={handleSortChange}
                 totalProducts={products.length}
@@ -151,9 +197,14 @@ export default function MainProduct({ selectedCategoryId }: MainProductProps) {
                                         </a>
                                     </div>
                                     <div className="product-action product-action-dark">
-                                        <a href="#" className="btn-product btn-cart" title="Add to cart">
+                                        <button 
+                                            className={`btn-product btn-cart ${addingToCartIds.includes(product.id) ? 'disabled' : ''}`}
+                                            title="Add to cart"
+                                            onClick={() => handleAddToCart(product)}
+                                            disabled={addingToCartIds.includes(product.id)}
+                                        >
                                             <span>add to cart</span>
-                                        </a>
+                                        </button>
                                     </div>
                                 </figure>
                                 <div className="product-body">
@@ -170,11 +221,11 @@ export default function MainProduct({ selectedCategoryId }: MainProductProps) {
                                     <div className="product-price">
                                         {product.gia_km ? (
                                             <>
-                                                <span className="new-price">${product.gia_km}</span>
-                                                <span className="old-price">Was ${product.gia}</span>
+                                                <span className="new-price">{formatCurrency(product.gia_km)}</span>
+                                                <span className="old-price">Was {formatCurrency(product.gia)}</span>
                                             </>
                                         ) : (
-                                            <span>${product.gia}</span>
+                                            <span>{formatCurrency(product.gia)}</span>
                                         )}
                                     </div>
                                     <div className="ratings-container">

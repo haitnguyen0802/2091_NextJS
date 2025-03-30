@@ -6,6 +6,9 @@ import MainLayout from './layouts/MainLayout';
 import HomePage from './pages/HomePage';
 import ProductDetailPage from './pages/ProductDetailPage';
 import ProductPage from './pages/ProductPage';
+import CartPage from './pages/CartPage';
+import CheckoutPage from './pages/CheckoutPage';
+import CheckoutSuccess from './pages/CheckoutSuccess';
 
 export default function App() {
   return (
@@ -15,6 +18,9 @@ export default function App() {
           <Route index element={<HomePage />} />
           <Route path={PATHS.PRODUCTS} element={<ProductPage />} />
           <Route path={PATHS.PRODUCT_DETAIL} element={<ProductDetailPage />} />
+          <Route path={PATHS.CART} element={<CartPage />} />
+          <Route path={PATHS.CHECKOUT} element={<CheckoutPage />} />
+          <Route path={PATHS.CHECKOUT_SUCCESS} element={<CheckoutSuccess />} />
         </Route>
       </Routes>
     </BrowserRouter>
