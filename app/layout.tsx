@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Script from 'next/script';
 import ClientWrapper from "./components/ClientWrapper";
+import { AuthProvider } from "./context/AuthContext";
 
 export const metadata: Metadata = {
   title: "Shop App",
@@ -38,9 +39,11 @@ export default function RootLayout({
         <link rel="stylesheet" href="/assets/css/plugins/owl-carousel/owl.carousel.css" />
       </head>
       <body>
-        <ClientWrapper>
-          {children}
-        </ClientWrapper>
+        <AuthProvider>
+          <ClientWrapper>
+            {children}
+          </ClientWrapper>
+        </AuthProvider>
         <Script src="/assets/js/jquery.min.js" />
         <Script src="/assets/js/bootstrap.bundle.min.js" />
         <Script src="/assets/js/jquery.hoverIntent.min.js" />

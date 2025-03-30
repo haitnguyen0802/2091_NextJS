@@ -1,9 +1,10 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 
-// Interface cho user
-export interface User {
+// Use the same user interface as in UserContext
+interface UserType {
     id: number;
     email: string;
     mat_khau: string;
@@ -18,19 +19,14 @@ export interface User {
     created_at: string | null;
 }
 
-// Interface cho safe user info (không có password)
-interface SafeUser extends Omit<User, 'mat_khau'> {
-    mat_khau: string; // Để tương thích với User interface, nhưng sẽ giữ rỗng
-}
-
 // Interface cho AuthContext
 interface AuthContextType {
-    user: SafeUser | null;
-    isLoading: boolean;
-    error: string | null;
+    isAuthenticated: boolean;
+    user: UserType | null;
     login: (email: string, password: string) => Promise<boolean>;
     logout: () => void;
-    isAuthenticated: boolean;
+    loading: boolean;
+    error: string | null;
 }
 
 // Tạo context
@@ -47,89 +43,113 @@ export const useAuth = () => {
 
 // AuthProvider component
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [user, setUser] = useState<SafeUser | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+    const [user, setUser] = useState<UserType | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const router = useRouter();
 
-    // Load user từ localStorage khi mount
+    // Check if user is already logged in on component mount
     useEffect(() => {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
+        const checkAuthState = async () => {
+            setLoading(true);
             try {
-                setUser(JSON.parse(storedUser));
+                // Check if there's user data in localStorage
+                const userData = localStorage.getItem('user');
+                if (userData) {
+                    const parsedUser = JSON.parse(userData);
+                    
+                    // Verify the user data is still valid by fetching from API
+                    const response = await fetch('https://fpl.timefortea.io.vn/api/users');
+                    if (!response.ok) {
+                        throw new Error('Failed to validate user session');
+                    }
+                    
+                    const users = await response.json();
+                    const currentUser = users.find((u: UserType) => u.email === parsedUser.email);
+                    
+                    if (currentUser) {
+                        setUser(currentUser);
+                        setIsAuthenticated(true);
+                    } else {
+                        // User not found in the API response
+                        localStorage.removeItem('user');
+                        setIsAuthenticated(false);
+                        setUser(null);
+                    }
+                }
             } catch (err) {
-                console.error('Lỗi khi parse user từ localStorage:', err);
+                console.error('Error checking auth state:', err);
+                setError(err instanceof Error ? err.message : 'Authentication error');
                 localStorage.removeItem('user');
+                setIsAuthenticated(false);
+                setUser(null);
+            } finally {
+                setLoading(false);
             }
-        }
-        setIsLoading(false);
+        };
+
+        checkAuthState();
     }, []);
 
-    // Đăng nhập
     const login = async (email: string, password: string): Promise<boolean> => {
-        setIsLoading(true);
+        setLoading(true);
         setError(null);
         
         try {
-            // Fetch users từ API
+            // Call API to get all users
             const response = await fetch('https://fpl.timefortea.io.vn/api/users');
             if (!response.ok) {
-                throw new Error('Failed to fetch users data');
+                throw new Error('Failed to login');
             }
             
-            const users: User[] = await response.json();
+            const users = await response.json();
             
-            // Tìm user với email tương ứng
-            const foundUser = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+            // Find user with matching email
+            const user = users.find((u: UserType) => u.email === email);
             
-            if (!foundUser) {
-                setError('Email không tồn tại');
+            if (!user) {
+                setError('Invalid email or password');
                 return false;
             }
             
-            // Trong môi trường thực tế, password sẽ được hash và so sánh bằng bcrypt
-            // Nhưng ở đây API trả về password đã hash, nên chúng ta không thể so sánh trực tiếp
-            // Vì vậy, giả định là password đúng nếu nó khớp với mật khẩu được cung cấp
-            // Đối với môi trường thực tế, điều này không an toàn và nên sử dụng API đăng nhập thực sự
-            
-            // Trong trường hợp demo này, chỉ kiểm tra nếu mật khẩu là "123456" hoặc email là phần trước @ của email
-            const passwordPart = email.split('@')[0];
-            if (password === "123456" || password === passwordPart) {
-                // Tạo đối tượng user an toàn (không có mật khẩu thật)
-                const safeUser: SafeUser = {
-                    ...foundUser,
-                    mat_khau: '' // Đặt mật khẩu thành chuỗi rỗng để bảo mật
-                };
-                
-                setUser(safeUser);
-                localStorage.setItem('user', JSON.stringify(safeUser));
-                return true;
-            } else {
-                setError('Mật khẩu không đúng');
+            // In a real app, you'd verify the password hash on the server
+            // Here we're simplifying by just checking if password matches
+            // This is not secure for production
+            if (user.mat_khau !== password) {
+                setError('Invalid email or password');
                 return false;
             }
+            
+            // Save user to state and localStorage
+            setUser(user);
+            setIsAuthenticated(true);
+            localStorage.setItem('user', JSON.stringify(user));
+            
+            return true;
         } catch (err) {
-            console.error('Lỗi khi đăng nhập:', err);
-            setError('Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại sau.');
+            console.error('Login error:', err);
+            setError(err instanceof Error ? err.message : 'Failed to login');
             return false;
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
     };
 
-    // Đăng xuất
     const logout = () => {
-        setUser(null);
         localStorage.removeItem('user');
+        setIsAuthenticated(false);
+        setUser(null);
+        router.push('/');
     };
 
-    const value: AuthContextType = {
+    const value = {
+        isAuthenticated,
         user,
-        isLoading,
-        error,
         login,
         logout,
-        isAuthenticated: !!user,
+        loading,
+        error
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
