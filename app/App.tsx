@@ -10,6 +10,7 @@ import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import CheckoutSuccess from './pages/CheckoutSuccess';
 import Dashboard from './pages/Dashboard';
+import AboutUs from './pages/AboutUs';
 
 export default function App() {
   return (
@@ -22,7 +23,8 @@ export default function App() {
           <Route path={PATHS.CART} element={<CartPage />} />
           <Route path={PATHS.CHECKOUT} element={<CheckoutPage />} />
           <Route path={PATHS.CHECKOUT_SUCCESS} element={<CheckoutSuccess />} />
-          <Route path={PATHS.DASHBOARD} element={<Dashboard/>} />
+          <Route path={PATHS.DASHBOARD} element={<Dashboard />} />
+          <Route path={PATHS.ABOUT} element={<AboutUs />} />
         </Route>
       </Routes>
     </BrowserRouter>
