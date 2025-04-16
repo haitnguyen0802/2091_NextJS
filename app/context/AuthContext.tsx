@@ -2,8 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import bcrypt from 'bcryptjs';
 
-// Use the same user interface as in UserContext
 interface UserType {
     id: number;
     email: string;
@@ -19,7 +19,6 @@ interface UserType {
     created_at: string | null;
 }
 
-// Interface cho AuthContext
 interface AuthContextType {
     isAuthenticated: boolean;
     user: UserType | null;
@@ -29,10 +28,9 @@ interface AuthContextType {
     error: string | null;
 }
 
-// Tạo context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Hook sử dụng context
+//Custome lại hook để kiểm tra đăng nhập từ AuthContext
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (context === undefined) {
@@ -49,17 +47,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
 
-    // Check if user is already logged in on component mount
     useEffect(() => {
         const checkAuthState = async () => {
             setLoading(true);
             try {
-                // Check if there's user data in localStorage
                 const userData = localStorage.getItem('user');
                 if (userData) {
                     const parsedUser = JSON.parse(userData);
                     
-                    // Verify the user data is still valid by fetching from API
                     const response = await fetch('https://fpl.timefortea.io.vn/api/users');
                     if (!response.ok) {
                         throw new Error('Failed to validate user session');
@@ -72,7 +67,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                         setUser(currentUser);
                         setIsAuthenticated(true);
                     } else {
-                        // User not found in the API response
                         localStorage.removeItem('user');
                         setIsAuthenticated(false);
                         setUser(null);
@@ -97,7 +91,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setError(null);
         
         try {
-            // Call API to get all users
             const response = await fetch('https://fpl.timefortea.io.vn/api/users');
             if (!response.ok) {
                 throw new Error('Failed to login');
@@ -105,7 +98,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             
             const users = await response.json();
             
-            // Find user with matching email
             const user = users.find((u: UserType) => u.email === email);
             
             if (!user) {
@@ -113,15 +105,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 return false;
             }
             
-            // In a real app, you'd verify the password hash on the server
-            // Here we're simplifying by just checking if password matches
-            // This is not secure for production
-            if (user.mat_khau !== password) {
+            const isPasswordValid = await bcrypt.compare(password, user.mat_khau);
+            
+            if (!isPasswordValid) {
                 setError('Invalid email or password');
                 return false;
             }
             
-            // Save user to state and localStorage
             setUser(user);
             setIsAuthenticated(true);
             localStorage.setItem('user', JSON.stringify(user));

@@ -41,10 +41,10 @@ export default function LoginModal({ isOpen, onClose, onSwitchToRegister }: Logi
                             <div className="form-tab">
                                 <ul className="nav nav-pills nav-fill" role="tablist">
                                     <li className="nav-item">
-                                        <a className="nav-link active" id="signin-tab" data-toggle="tab" href="#signin" role="tab" aria-controls="signin" aria-selected="true">Sign In</a>
+                                        <a className="nav-link active" id="signin-tab" data-toggle="tab" href="#signin" role="tab" aria-controls="signin" aria-selected="true">Đăng nhập</a>
                                     </li>
                                     <li className="nav-item">
-                                        <a className="nav-link" id="register-tab" data-toggle="tab" href="#register" role="tab" aria-controls="register" aria-selected="false" onClick={onSwitchToRegister}>Register</a>
+                                        <a className="nav-link" id="register-tab" data-toggle="tab" href="#register" role="tab" aria-controls="register" aria-selected="false" onClick={onSwitchToRegister}>Đăng ký</a>
                                     </li>
                                 </ul>
                                 <div className="tab-content" id="tab-content-5">
@@ -56,7 +56,7 @@ export default function LoginModal({ isOpen, onClose, onSwitchToRegister }: Logi
                                                 </div>
                                             )}
                                             <div className="form-group">
-                                                <label htmlFor="singin-email">Email address *</label>
+                                                <label htmlFor="singin-email">Địa chỉ email *</label>
                                                 <input 
                                                     type="email" 
                                                     className="form-control" 
@@ -70,7 +70,7 @@ export default function LoginModal({ isOpen, onClose, onSwitchToRegister }: Logi
                                             </div>
 
                                             <div className="form-group">
-                                                <label htmlFor="singin-password">Password *</label>
+                                                <label htmlFor="singin-password">Mật khẩu *</label>
                                                 <input 
                                                     type="password" 
                                                     className="form-control" 
@@ -92,11 +92,11 @@ export default function LoginModal({ isOpen, onClose, onSwitchToRegister }: Logi
                                                     {loading ? (
                                                         <>
                                                             <span className="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>
-                                                            Logging in...
+                                                            Đang đăng nhập...
                                                         </>
                                                     ) : (
                                                         <>
-                                                            <span>LOG IN</span>
+                                                            <span>ĐĂNG NHẬP</span>
                                                             <i className="icon-long-arrow-right"></i>
                                                         </>
                                                     )}
@@ -111,10 +111,10 @@ export default function LoginModal({ isOpen, onClose, onSwitchToRegister }: Logi
                                                         onChange={(e) => setRememberMe(e.target.checked)}
                                                         disabled={loading}
                                                     />
-                                                    <label className="custom-control-label" htmlFor="signin-remember">Remember Me</label>
+                                                    <label className="custom-control-label" htmlFor="signin-remember">Ghi nhớ đăng nhập</label>
                                                 </div>
 
-                                                <a href="#" className="forgot-link">Forgot Your Password?</a>
+                                                <a href="#" className="forgot-link">Quên mật khẩu?</a>
                                             </div>
                                         </form>
                                     </div>
