@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import bcrypt from 'bcryptjs';
 
 interface RegisterModalProps {
     isOpen: boolean;
@@ -9,11 +10,24 @@ interface RegisterModalProps {
 }
 
 export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModalProps) {
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [formData, setFormData] = useState({
+        ho_ten: '',
+        email: '',
+        mat_khau: '',
+        dia_chi: '',
+        dien_thoai: '',
+        hinh: 'avatar.jpg', // Default value
+    });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -21,14 +35,33 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }: Regi
         setError(null);
 
         try {
-            // Trong môi trường thực tế, đây sẽ gọi API đăng ký
-            // Nhưng vì bài tập này chỉ demo, ta chỉ giả lập thành công
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // Hash the password before sending to API
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(formData.mat_khau, salt);
+            
+            const response = await fetch('https://fpl.timefortea.io.vn/api/users', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ...formData,
+                    mat_khau: hashedPassword, // Send the hashed password instead
+                    vai_tro: 0, // Default user role
+                    khoa: 0, // Default unlock status
+                }),
+            });
+
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.message || 'Đăng ký không thành công');
+            }
             
             alert('Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.');
             onSwitchToLogin();
         } catch (error) {
-            setError('Có lỗi xảy ra khi đăng ký. Vui lòng thử lại sau.');
+            setError(error instanceof Error ? error.message : 'Có lỗi xảy ra khi đăng ký. Vui lòng thử lại sau.');
             console.error('Registration error:', error);
         } finally {
             setIsSubmitting(false);
@@ -65,43 +98,69 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }: Regi
                                                 </div>
                                             )}
                                             <div className="form-group">
-                                                <label htmlFor="register-name">Your name *</label>
+                                                <label htmlFor="ho_ten">Họ và tên *</label>
                                                 <input 
                                                     type="text" 
                                                     className="form-control" 
-                                                    id="register-name" 
-                                                    name="register-name" 
+                                                    id="ho_ten" 
+                                                    name="ho_ten" 
                                                     required
-                                                    value={name}
-                                                    onChange={(e) => setName(e.target.value)}
+                                                    value={formData.ho_ten}
+                                                    onChange={handleChange}
                                                     disabled={isSubmitting}
                                                 />
                                             </div>
 
                                             <div className="form-group">
-                                                <label htmlFor="register-email">Your email address *</label>
+                                                <label htmlFor="email">Địa chỉ email *</label>
                                                 <input 
                                                     type="email" 
                                                     className="form-control" 
-                                                    id="register-email" 
-                                                    name="register-email" 
+                                                    id="email" 
+                                                    name="email" 
                                                     required
-                                                    value={email}
-                                                    onChange={(e) => setEmail(e.target.value)}
+                                                    value={formData.email}
+                                                    onChange={handleChange}
                                                     disabled={isSubmitting}
                                                 />
                                             </div>
 
                                             <div className="form-group">
-                                                <label htmlFor="register-password">Password *</label>
+                                                <label htmlFor="mat_khau">Mật khẩu *</label>
                                                 <input 
                                                     type="password" 
                                                     className="form-control" 
-                                                    id="register-password" 
-                                                    name="register-password" 
+                                                    id="mat_khau" 
+                                                    name="mat_khau" 
                                                     required
-                                                    value={password}
-                                                    onChange={(e) => setPassword(e.target.value)}
+                                                    value={formData.mat_khau}
+                                                    onChange={handleChange}
+                                                    disabled={isSubmitting}
+                                                />
+                                            </div>
+
+                                            <div className="form-group">
+                                                <label htmlFor="dia_chi">Địa chỉ</label>
+                                                <input 
+                                                    type="text" 
+                                                    className="form-control" 
+                                                    id="dia_chi" 
+                                                    name="dia_chi" 
+                                                    value={formData.dia_chi}
+                                                    onChange={handleChange}
+                                                    disabled={isSubmitting}
+                                                />
+                                            </div>
+
+                                            <div className="form-group">
+                                                <label htmlFor="dien_thoai">Số điện thoại</label>
+                                                <input 
+                                                    type="tel" 
+                                                    className="form-control" 
+                                                    id="dien_thoai" 
+                                                    name="dien_thoai" 
+                                                    value={formData.dien_thoai}
+                                                    onChange={handleChange}
                                                     disabled={isSubmitting}
                                                 />
                                             </div>
@@ -115,11 +174,11 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }: Regi
                                                     {isSubmitting ? (
                                                         <>
                                                             <span className="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>
-                                                            Registering...
+                                                            Đang đăng ký...
                                                         </>
                                                     ) : (
                                                         <>
-                                                            <span>SIGN UP</span>
+                                                            <span>ĐĂNG KÝ</span>
                                                             <i className="icon-long-arrow-right"></i>
                                                         </>
                                                     )}
@@ -133,7 +192,7 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }: Regi
                                                         required
                                                         disabled={isSubmitting}
                                                     />
-                                                    <label className="custom-control-label" htmlFor="register-policy">I agree to the <a href="#">privacy policy</a> *</label>
+                                                    <label className="custom-control-label" htmlFor="register-policy">Tôi đồng ý với <a href="#">chính sách bảo mật</a> *</label>
                                                 </div>
                                             </div>
                                         </form>
