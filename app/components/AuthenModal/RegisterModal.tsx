@@ -9,6 +9,22 @@ interface RegisterModalProps {
     onSwitchToLogin: () => void;
 }
 
+// Define user data type
+interface UserType {
+    id: number;
+    email: string;
+    mat_khau: string;
+    ho_ten: string;
+    dia_chi: string | null;
+    dien_thoai: string | null;
+    vai_tro: number;
+    khoa: number;
+    hinh: string | null;
+    email_verified_at: string | null;
+    remember_token: string | null;
+    created_at: string | null;
+}
+
 export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModalProps) {
     const [formData, setFormData] = useState({
         ho_ten: '',
@@ -29,6 +45,43 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }: Regi
         }));
     };
 
+    // Helper function to fetch user by email with retries
+    const fetchUserByEmail = async (email: string, maxRetries = 3, delayMs = 1000): Promise<UserType> => {
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                console.log(`Attempt ${attempt}/${maxRetries} to fetch user by email: ${email}`);
+                
+                const response = await fetch(`https://fpl.timefortea.io.vn/api/users/email/${encodeURIComponent(email)}`);
+                
+                if (response.ok) {
+                    const userData: UserType = await response.json();
+                    console.log('User data fetched successfully:', userData);
+                    return userData;
+                }
+                
+                const errorText = await response.text();
+                console.log(`Attempt ${attempt} failed with status ${response.status}: ${errorText}`);
+                
+                // If we have more retries, wait before next attempt
+                if (attempt < maxRetries) {
+                    console.log(`Waiting ${delayMs}ms before next attempt...`);
+                    await new Promise(resolve => setTimeout(resolve, delayMs));
+                }
+            } catch (error) {
+                console.error(`Attempt ${attempt} failed with error:`, error);
+                
+                // If we have more retries, wait before next attempt
+                if (attempt < maxRetries) {
+                    console.log(`Waiting ${delayMs}ms before next attempt...`);
+                    await new Promise(resolve => setTimeout(resolve, delayMs));
+                }
+            }
+        }
+        
+        // If we get here, all attempts failed
+        throw new Error('Không thể lấy thông tin người dùng sau nhiều lần thử');
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -38,6 +91,9 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }: Regi
             // Hash the password before sending to API
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(formData.mat_khau, salt);
+            
+            // Step 1: Register the user
+            console.log('Sending registration request for email:', formData.email);
             
             const response = await fetch('https://fpl.timefortea.io.vn/api/users', {
                 method: 'POST',
@@ -58,13 +114,76 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }: Regi
                 throw new Error(data.message || 'Đăng ký không thành công');
             }
             
-            alert('Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.');
+            console.log('Registration successful. API response:', data);
+            
+            // Step 2: Fetch the user by email to get the ID (with retries)
+            console.log('Fetching user by email with retries:', formData.email);
+            const userData = await fetchUserByEmail(formData.email);
+            
+            if (!userData || !userData.id) {
+                console.error('User ID not found in API response:', userData);
+                throw new Error('Không thể xác định ID người dùng từ phản hồi API');
+            }
+            
+            const userId = userData.id;
+            console.log('Retrieved user ID:', userId);
+            
+            // Step 3: Generate activation token and send email
+            const activationToken = await bcrypt.hash(formData.email + Date.now(), 10)
+                .then(hash => hash.replace(/[^a-zA-Z0-9]/g, ''));
+            
+            console.log('Sending activation email with userId:', userId);
+            
+            // Send activation email
+            await sendActivationEmail(userId, formData.email, formData.ho_ten, activationToken);
+            
+            alert('Đăng ký thành công! Vui lòng kiểm tra email để kích hoạt tài khoản của bạn.');
             onSwitchToLogin();
         } catch (error) {
             setError(error instanceof Error ? error.message : 'Có lỗi xảy ra khi đăng ký. Vui lòng thử lại sau.');
             console.error('Registration error:', error);
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    // Function to send activation email
+    const sendActivationEmail = async (userId: number, email: string, name: string, token: string) => {
+        try {
+            // Validate required parameters
+            if (!userId || !email || !token) {
+                console.error('Missing required parameters for activation email:', { userId, email, token });
+                throw new Error('Missing required parameters for activation email');
+            }
+
+            console.log('Sending activation email with params:', { userId, email, name, token });
+            
+            const response = await fetch('/api/send-activation-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId,
+                    to: email,
+                    subject: 'Kích hoạt tài khoản',
+                    name: name,
+                    token: token,
+                }),
+            });
+
+            const responseData = await response.json();
+            
+            if (!response.ok) {
+                console.error('Activation email API error:', responseData);
+                throw new Error(responseData.error || 'Failed to send activation email');
+            }
+            
+            console.log('Activation email sent successfully:', responseData);
+        } catch (error) {
+            console.error('Error sending activation email:', error);
+            // We don't want to stop the registration process if email fails
+            // So we just log the error and continue
         }
     };
 
@@ -83,10 +202,10 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }: Regi
                             <div className="form-tab">
                                 <ul className="nav nav-pills nav-fill" role="tablist">
                                     <li className="nav-item">
-                                        <a className="nav-link" id="signin-tab" data-toggle="tab" href="#signin" role="tab" aria-controls="signin" aria-selected="false" onClick={onSwitchToLogin}>Sign In</a>
+                                        <a className="nav-link" id="signin-tab" data-toggle="tab" href="#signin" role="tab" aria-controls="signin" aria-selected="false" onClick={onSwitchToLogin}>Đăng nhập</a>
                                     </li>
                                     <li className="nav-item">
-                                        <a className="nav-link active" id="register-tab" data-toggle="tab" href="#register" role="tab" aria-controls="register" aria-selected="true">Register</a>
+                                        <a className="nav-link active" id="register-tab" data-toggle="tab" href="#register" role="tab" aria-controls="register" aria-selected="true">Đăng ký</a>
                                     </li>
                                 </ul>
                                 <div className="tab-content" id="tab-content-5">

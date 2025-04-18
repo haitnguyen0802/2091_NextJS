@@ -101,14 +101,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             const user = users.find((u: UserType) => u.email === email);
             
             if (!user) {
-                setError('Invalid email or password');
+                setError('Email hoặc mật khẩu không đúng');
+                return false;
+            }
+            
+            // Check if email is verified
+            if (!user.email_verified_at) {
+                setError('Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email để kích hoạt tài khoản.');
                 return false;
             }
             
             const isPasswordValid = await bcrypt.compare(password, user.mat_khau);
             
             if (!isPasswordValid) {
-                setError('Invalid email or password');
+                setError('Email hoặc mật khẩu không đúng');
                 return false;
             }
             
@@ -119,7 +125,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             return true;
         } catch (err) {
             console.error('Login error:', err);
-            setError(err instanceof Error ? err.message : 'Failed to login');
+            setError(err instanceof Error ? err.message : 'Đăng nhập thất bại');
             return false;
         } finally {
             setLoading(false);

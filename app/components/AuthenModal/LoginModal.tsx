@@ -81,6 +81,9 @@ export default function LoginModal({ isOpen, onClose, onSwitchToRegister }: Logi
                                                     onChange={(e) => setPassword(e.target.value)}
                                                     disabled={loading}
                                                 />
+                                                <small className="form-text text-muted">
+                                                    Nếu bạn vừa đăng ký, vui lòng kiểm tra email để kích hoạt tài khoản trước khi đăng nhập.
+                                                </small>
                                             </div>
 
                                             <div className="form-footer">
